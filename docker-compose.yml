@@ -1,0 +1,14 @@
+services:
+  nobizid:
+    build: .
+    ports:
+      - "7999:7999"
+    environment:
+      GBIZID_ISSUER: http://localhost:7999/oauth/
+      GBIZID_CLIENT_ID: local-client-id
+      GBIZID_CLIENT_SECRET: local-client-secret
+      GBIZID_REDIRECT_URI: http://localhost:3000/callback
+      # ユーザー定義を差し替えたい場合は、イメージ内の /app/users.yaml を
+      # ボリュームマウントで上書きするか、下記のようにパスを変更する。
+      # GBIZID_USERS_FILE: /app/users.yaml
+    restart: unless-stopped

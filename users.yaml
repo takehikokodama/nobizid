@@ -1,0 +1,273 @@
+# nobizid ユーザー定義ファイル
+#
+# ここに書いたユーザーが GBizID(ダミー)へのログイン候補になり、UserInfo で
+# 返却される属性もここで自由に定義できます。編集後はサーバーを再起動してください
+# (GBIZID_USERS_FILE 環境変数で読み込むパスを変更可能。既定はこのファイル)。
+#
+# 各ユーザーの username/password/sub/account_type/corp_type/email は必須。
+# profile / user / mandate_info / verified_claims / role / delegation_info は
+# 実際の GBizID UserInfo レスポンスと同じ形でそのまま返却されます
+# (詳しい属性の意味・アカウント種別ごとの必須/任意は gbizid-dummy-op-spec.md を参照)。
+#
+# account_type: 1=gBizIDエントリー 2=gBizIDプライム 3=gBizIDメンバー
+# corp_type:    1=法人             2=個人事業主
+
+users:
+  # --- gBizIDプライム・法人 -------------------------------------------------
+  - username: yamada
+    password: password
+    sub: "1242"
+    account_type: 2
+    corp_type: 1
+    email: yamada.tarou@example.co.jp
+    profile:
+      corporate_number: "2710100718279"
+      name: aaa株式会社
+      en_name: ""
+      prefecture_name: "13" # JIS X 0401 都道府県コード(13=東京都)
+      address1: 港区
+      address2: "〇〇〇丁目〇番〇号"
+      rep_last_nm: 山田
+      rep_first_nm: 太郎
+      rep_last_nm_kana: ヤマダ
+      rep_first_nm_kana: タロウ
+      birthday_ymd: "19800101"
+    user:
+      user_last_nm: 山田
+      user_first_nm: 太郎
+      user_last_nm_kana: ヤマダ
+      user_first_nm_kana: タロウ
+      user_post_code: "1050001"
+      user_prefecture_name: "13"
+      user_address1: 港区
+      user_address2: "〇〇〇丁目〇番〇号"
+      user_address3: ""
+      user_department: 総務部
+      user_tel_no_contact: "0311111111"
+      user_birthday_ymd: "19800101"
+    mandate_info: []
+    verified_claims:
+      verification:
+        trust_framework: jp_gbizid_v1
+        assurance_level: ial2
+        time: "2021-06-06T05:32+09:00"
+        assurance_process:
+          procedure: jp_gbizid_online_corporation
+      claims:
+        family_name: 山田
+        given_name: 太郎
+        birthdate: "1980-01-01"
+        authority:
+          applies_to:
+            registration_number: "2710100718279"
+          permission:
+            - role: prime
+    role:
+      applies_to:
+        levels:
+          - level: 1
+            branch_name: aaa株式会社
+      permission:
+        - role: jp_gbizid_prime
+    delegation_info: {}
+
+  # --- gBizIDプライム・個人事業主 -------------------------------------------
+  - username: tanaka
+    password: password
+    sub: "1300"
+    account_type: 2
+    corp_type: 2
+    email: tanaka.taro@example.co.jp
+    profile:
+      corporate_number: "3000000000003"
+      name: たなか商店
+      en_name: ""
+      prefecture_name: "13"
+      address1: 千代田区
+      address2: "紀尾井町1-3 東京ガーデンテラス紀尾井町"
+      rep_last_nm: 田中
+      rep_first_nm: 太郎
+      rep_last_nm_kana: タナカ
+      rep_first_nm_kana: タロウ
+      birthday_ymd: "19911106"
+    user:
+      user_last_nm: 田中
+      user_first_nm: 太郎
+      user_last_nm_kana: タナカ
+      user_first_nm_kana: タロウ
+      user_post_code: "1020094"
+      user_prefecture_name: "13"
+      user_address1: 千代田区
+      user_address2: "紀尾井町1-3 東京ガーデンテラス紀尾井町"
+      user_address3: ""
+      user_department: ""
+      user_tel_no_contact: "0322222222"
+      user_birthday_ymd: "19911106"
+    mandate_info: []
+    verified_claims:
+      verification:
+        trust_framework: jp_gbizid_v1
+        assurance_level: ial2
+        time: "2021-06-06T05:32+09:00"
+        assurance_process:
+          procedure: jp_gbizid_online_sole_proprietorship
+      # 個人事業主のプライムは authority ではなく address が返る(法人番号に紐づく
+      # authority.applies_to は法人のみ)。
+      claims:
+        family_name: 田中
+        given_name: 太郎
+        birthdate: "1991-11-06"
+        address:
+          street_address_part1: "紀尾井町1-3"
+          street_address_part2: "東京ガーデンテラス紀尾井町"
+          street_address: "紀尾井町1-3 東京ガーデンテラス紀尾井町"
+          locality: 千代田区
+          region: 東京都
+          postal_code: "1020094"
+          country: JP
+    role:
+      applies_to:
+        levels:
+          - level: 1
+            branch_name: たなか商店
+      permission:
+        - role: jp_gbizid_prime
+    delegation_info: {}
+
+  # --- gBizIDメンバー(yamada の会社に所属、かつ他社から代理人ログイン中の例) ---
+  - username: suzuki
+    password: password
+    sub: "1243"
+    account_type: 3
+    corp_type: 1
+    parent_id: "1242" # 親となる gBizIDプライム(yamada)の sub
+    email: suzuki.hanako@example.co.jp
+    # プライム同様、法人の基本情報(profile)は所属会社の情報が返る
+    profile:
+      corporate_number: "2710100718279"
+      name: aaa株式会社
+      en_name: ""
+      prefecture_name: "13"
+      address1: 港区
+      address2: "〇〇〇丁目〇番〇号"
+      rep_last_nm: 山田
+      rep_first_nm: 太郎
+      rep_last_nm_kana: ヤマダ
+      rep_first_nm_kana: タロウ
+      birthday_ymd: "19800101"
+    user:
+      user_last_nm: 鈴木
+      user_first_nm: 花子
+      user_last_nm_kana: スズキ
+      user_first_nm_kana: ハナコ
+      user_post_code: "1050001"
+      user_prefecture_name: "13"
+      user_address1: 港区
+      user_address2: "〇〇〇丁目〇番〇号"
+      user_address3: ""
+      user_department: 営業部
+      user_tel_no_contact: "0311112222"
+      user_birthday_ymd: "19900202"
+    # メンバーが委任先として利用可能な RP の一覧
+    mandate_info:
+      - client_id: local-client-id
+    verified_claims:
+      verification:
+        trust_framework: jp_gbizid_v1
+        assurance_level: ial2
+        time: "2021-06-06T05:32+09:00"
+        assurance_process:
+          procedure: jp_gbizid_member
+      # メンバーは氏名・生年月日を含まず、authority(役割)のみ
+      claims:
+        authority:
+          applies_to:
+            registration_number: "2710100718279"
+          permission:
+            - role: member
+    role:
+      applies_to:
+        levels:
+          - level: 1
+            branch_name: aaa株式会社
+      permission:
+        - role: jp_gbizid_member
+    # 他社(委任者)から代理人ログイン設定を受けている場合の例
+    delegation_info:
+      delegation_no: "1092730197"
+      system_cd: AAAAA
+      delegation_start: "20181001"
+      delegation_end: "20990101"
+      category_info:
+        - category_cd: CAT_AAA
+          category_nm: 委任区分A
+          active_flg: true
+      meti_id: 27019707
+      business_type: 法人
+      corp_no: "2710100718279"
+      firm_nm: あああ
+      firm_nm_en: aaa
+      address_pref: 東京都
+      address_city: "○○区"
+      address_number: "××12-3-4"
+      last_nm: "〇〇"
+      first_nm: "〇〇"
+      last_nm_kana: "〇〇"
+      first_nm_kana: "〇〇"
+      birthday: "19700101"
+      user_last_nm: "〇〇"
+      user_first_nm: "〇〇"
+      user_last_nm_kana: "〇〇"
+      user_first_nm_kana: "〇〇"
+      user_post_cd: "1234567"
+      user_address_pref: 東京都
+      user_address_city: "○○区"
+      user_address_number: "××12-3-4"
+      user_address_bldg: "○○ビル3F"
+      user_department: "○○部"
+      user_tel_no_contact: "01234567890"
+      user_email: aaa@bbb.cc
+      note: 委任で入力された備考
+
+  # --- gBizIDエントリー・個人事業主(本人確認レベルが低いアカウント) ---------
+  - username: sato
+    password: password
+    sub: "1400"
+    account_type: 1
+    corp_type: 2
+    email: sato.jiro@example.com
+    profile:
+      corporate_number: "4000000000004"
+      name: さとう商店
+      en_name: ""
+      prefecture_name: "13"
+      address1: 新宿区
+      address2: ""
+      rep_last_nm: 佐藤
+      rep_first_nm: 次郎
+      rep_last_nm_kana: サトウ
+      rep_first_nm_kana: ジロウ
+      # エントリーは代表者生年月日が返却されないため未設定
+    user:
+      user_last_nm: 佐藤
+      user_first_nm: 次郎
+      user_last_nm_kana: サトウ
+      user_first_nm_kana: ジロウ
+      user_post_code: "1600022"
+      user_prefecture_name: "13"
+      user_address1: 新宿区
+      user_address2: ""
+      user_address3: ""
+      user_department: ""
+      user_tel_no_contact: ""
+      user_birthday_ymd: "19950303"
+    mandate_info: []
+    # エントリーは審査(本人確認)を経ていないため ial1、time/assurance_process/
+    # claims は返却されない(空のまま)
+    verified_claims:
+      verification:
+        trust_framework: jp_gbizid_v1
+        assurance_level: ial1
+      claims: {}
+    role: {}
+    delegation_info: {}
