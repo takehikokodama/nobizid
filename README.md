@@ -23,6 +23,11 @@ Docker:
 docker compose up --build
 ```
 
+`main`へのpush時にGitHub ActionsがDockerイメージをGHCRへ自動publishする。ビルドせずに直接pullすることも可能:
+```bash
+docker pull ghcr.io/takehikokodama/nobizid:latest
+```
+
 ## 設定（環境変数）
 
 | 変数 | 既定値 | 説明 |
