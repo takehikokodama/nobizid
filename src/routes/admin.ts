@@ -20,7 +20,7 @@ function formatTime(ms: number): string {
 }
 
 function accountLabel(accountType: number, corpType: number): string {
-  const account = { 1: 'gBizIDエントリー', 2: 'gBizIDプライム', 3: 'gBizIDメンバー' }[accountType] ?? `不明(${accountType})`
+  const account = { 1: 'GビズIDエントリー', 2: 'GビズIDプライム', 3: 'GビズIDメンバー' }[accountType] ?? `不明(${accountType})`
   const corp = { 1: '法人', 2: '個人事業主' }[corpType] ?? `不明(${corpType})`
   return `${account}・${corp}`
 }

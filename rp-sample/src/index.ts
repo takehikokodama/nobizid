@@ -34,7 +34,7 @@ const SCOPE_OPTIONS: ScopeOption[] = [
   { value: 'profile', description: '法人の基本情報（法人番号・商号・代表者名など）', optional: false, defaultOn: true },
   { value: 'user', description: 'アカウント利用者情報（氏名・部署・連絡先など）', optional: false, defaultOn: true },
   { value: 'email', description: 'アカウントID（メールアドレス）', optional: false, defaultOn: true },
-  { value: 'mandate', description: 'gBizIDメンバーが委任するRPの情報', optional: false, defaultOn: false },
+  { value: 'mandate', description: 'GビズIDメンバーが委任するRPの情報', optional: false, defaultOn: false },
   { value: 'offline_access', description: 'リフレッシュトークンの発行', optional: false, defaultOn: false },
   { value: 'jp_gbizid_v1_ida', description: '本人確認情報（verified_claims）', optional: true, defaultOn: false },
   { value: 'role', description: '組織情報（role）', optional: true, defaultOn: false },
@@ -169,7 +169,7 @@ function formPage(): string {
     'rp-sample',
     `
     <h1>rp-sample</h1>
-    <p class="subtitle">nobizid（GBizIDダミーOP）に接続するテスト用RP。設定を変えて色々なOIDCパターンを試せます。</p>
+    <p class="subtitle">nobizid（GビズIDダミーOP）に接続するテスト用RP。設定を変えて色々なOIDCパターンを試せます。</p>
     <form method="GET" action="/login">
       <div class="card">
         <h2>要求するscope</h2>
@@ -211,7 +211,7 @@ function successPage(session: SessionData): string {
     </div>
     <div class="card">
       <h2>id_token のクレーム</h2>
-      <p class="muted">GBizID仕様どおり、氏名・メールアドレス等の個人情報は含まれません。</p>
+      <p class="muted">GビズID仕様どおり、氏名・メールアドレス等の個人情報は含まれません。</p>
       <pre>${escapeHtml(JSON.stringify(user.idTokenClaims, null, 2))}</pre>
     </div>
     <div class="card">
