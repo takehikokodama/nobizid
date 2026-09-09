@@ -1,5 +1,7 @@
+import { randomUUID } from 'node:crypto'
 import { Hono } from 'hono'
 import { CLIENT_ID, GRANTED_OPTIONAL_SCOPES, REDIRECT_URI } from '../config.js'
+import { recordLogin } from '../history.js'
 import { resolveAuthorizeScopes } from '../scopes.js'
 import { generateAuthCode, saveAuthCode } from '../store.js'
 import { listUsernames, verifyCredentials } from '../users.js'
@@ -197,14 +199,33 @@ app.post('/oauth/authorize', async (c) => {
     )
   }
 
+  const scopeList = scope.split(' ').filter(Boolean)
+  const loginId = randomUUID()
+
   const code = generateAuthCode()
   saveAuthCode(code, {
     sub: user.sub,
     clientId: CLIENT_ID,
-    scope: scope.split(' ').filter(Boolean),
+    scope: scopeList,
     nonce,
     authTime: Math.floor(Date.now() / 1000),
     codeChallenge: codeChallenge || undefined,
+    loginId,
+  })
+
+  recordLogin({
+    id: loginId,
+    loggedInAt: Date.now(),
+    username: user.username,
+    sub: user.sub,
+    accountType: user.account_type,
+    corpType: user.corp_type,
+    clientId: CLIENT_ID,
+    redirectUri,
+    scope: scopeList,
+    pkce: Boolean(codeChallenge),
+    state,
+    nonce,
   })
 
   const url = new URL(redirectUri)

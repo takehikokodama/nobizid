@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { recordUserinfoCall } from '../history.js'
 import { getAccessGrant } from '../store.js'
 import { buildUserInfoClaims } from '../scopes.js'
 import { verifyAccessToken } from '../tokens.js'
@@ -35,6 +36,8 @@ app.get('/oauth/userinfo', async (c) => {
   if (!grant.scope.includes('openid')) {
     return c.json({ error: 'insufficient_scope', error_description: 'openid scope is required' }, 403)
   }
+
+  recordUserinfoCall(grant.loginId, grant.scope)
 
   return c.json(buildUserInfoClaims(user, grant.scope))
 })

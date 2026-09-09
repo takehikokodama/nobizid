@@ -57,6 +57,14 @@ gBizIDプライム（法人／個人事業主）・gBizIDメンバー・gBizID�
 | POST | `/oauth/token` |
 | GET | `/oauth/userinfo` |
 | GET | `/logout` |
+| GET | `/admin/logins` |
+
+## ログイン履歴画面
+
+`http://localhost:7999/admin/logins` で、直近のログイン(既定5件、`?limit=N`で変更可)を確認できる。
+RPが要求したscope・PKCEの有無・token交換(authorization_code/refresh_token)やuserinfo呼び出しの
+履歴が一覧できるので、RP側の実装を繋ぎ込む際のデバッグに使う。認証なし・手動リロード・インメモリ
+（再起動で消える）。
 
 ## テスト
 

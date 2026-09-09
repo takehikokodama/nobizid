@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { PORT } from './config.js'
 import { initKeys } from './keys.js'
+import admin from './routes/admin.js'
 import authorize from './routes/authorize.js'
 import discovery from './routes/discovery.js'
 import jwks from './routes/jwks.js'
@@ -18,6 +19,7 @@ app.route('/', authorize)
 app.route('/', token)
 app.route('/', userinfo)
 app.route('/', logout)
+app.route('/', admin)
 
 serve({ fetch: app.fetch, port: PORT }, (info) => {
   console.log(`nobizid (gbizid dummy OP) listening on http://localhost:${info.port}`)

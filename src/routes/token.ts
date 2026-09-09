@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { Hono, type Context } from 'hono'
 import { CLIENT_ID, CLIENT_SECRET, REDIRECT_URI } from '../config.js'
+import { recordTokenExchange } from '../history.js'
 import { resolveRefreshScopes } from '../scopes.js'
 import {
   consumeAuthCode,
@@ -69,7 +70,9 @@ async function handleAuthorizationCodeGrant(c: Context, body: Record<string, unk
     scope: record.scope,
     nonce: record.nonce,
     authTime: record.authTime,
+    loginId: record.loginId,
   })
+  recordTokenExchange(record.loginId, 'authorization_code', record.scope)
 
   const idToken = await issueIdToken({ sub: record.sub, nonce: record.nonce, authTime: record.authTime })
 
@@ -89,6 +92,7 @@ async function handleAuthorizationCodeGrant(c: Context, body: Record<string, unk
       scope: record.scope,
       nonce: record.nonce,
       authTime: record.authTime,
+      loginId: record.loginId,
     })
     response.refresh_token = refresh.token
   }
@@ -117,6 +121,7 @@ async function handleRefreshTokenGrant(c: Context, body: Record<string, unknown>
 
   const access = await issueAccessToken(record.sub)
   saveAccessGrant(access.jti, { ...record, scope: scopes })
+  recordTokenExchange(record.loginId, 'refresh_token', scopes)
 
   const idToken = await issueIdToken({ sub: record.sub, nonce: record.nonce, authTime: record.authTime })
 
