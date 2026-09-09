@@ -20,6 +20,10 @@ export type GbizIdUser = {
   account_type: AccountType
   corp_type: CorpType
   email: string
+  // Free-text annotation shown next to the username on the login screen
+  // (e.g. "GビズIDプライム・法人"). Falls back to an auto-generated label
+  // from account_type/corp_type when omitted.
+  label?: string
   parent_id?: string
   profile?: Record<string, unknown>
   user?: Record<string, unknown>
@@ -36,6 +40,7 @@ const FALLBACK_USERS: GbizIdUser[] = [
     sub: '1',
     account_type: 2,
     corp_type: 1,
+    label: 'GビズIDプライム・法人',
     email: 'operator@example.com',
     profile: {
       corporate_number: '1000000000001',
@@ -78,6 +83,7 @@ const FALLBACK_USERS: GbizIdUser[] = [
     sub: '2',
     account_type: 1,
     corp_type: 2,
+    label: 'GビズIDエントリー・個人事業主',
     email: 'admin@example.com',
     profile: {
       corporate_number: '2000000000002',
@@ -167,6 +173,6 @@ export function findUserBySub(sub: string): GbizIdUser | null {
   return USERS.find((u) => u.sub === sub) ?? null
 }
 
-export function listUsernames(): string[] {
-  return USERS.map((u) => u.username)
+export function listLoginHints(): Array<{ username: string; label?: string }> {
+  return USERS.map((u) => ({ username: u.username, label: u.label }))
 }

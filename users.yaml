@@ -5,20 +5,146 @@
 # (GBIZID_USERS_FILE 環境変数で読み込むパスを変更可能。既定はこのファイル)。
 #
 # 各ユーザーの username/password/sub/account_type/corp_type/email は必須。
+# label は任意のフリーテキストで、ログイン画面のヒント表示にのみ使われます
+# (例: "GビズIDプライム・法人"。省略した場合はヒントに注釈が付きません)。
 # profile / user / mandate_info / verified_claims / role / delegation_info は
 # 実際の GBizID UserInfo レスポンスと同じ形でそのまま返却されます
 # (詳しい属性の意味・アカウント種別ごとの必須/任意は gbizid-dummy-op-spec.md を参照)。
 #
 # account_type: 1=gBizIDエントリー 2=gBizIDプライム 3=gBizIDメンバー
 # corp_type:    1=法人             2=個人事業主
+#
+# 「法人」は株式会社などの営利法人とは限りません。地方自治法2条1項により地方公共団体
+# （都道府県・市区町村）も法人格を持ち、法人番号制度上も法人として付番されます。GBizIDの
+# corp_typeには地方公共団体専用の値がないため corp_type=1(法人) を使い、地方公共団体で
+# あることは label で注記します（下記 kakuushi / kakuuken を参照）。
 
 users:
+  # --- gBizIDプライム・法人(地方公共団体の例・市区町村) ---------------------
+  - username: kakuushi
+    password: password
+    sub: "1500"
+    account_type: 2
+    corp_type: 1
+    label: GビズIDプライム・地方公共団体（架空・市区町村）
+    email: shicho@kakuu.lg.jp
+    profile:
+      corporate_number: "5000020130001"
+      name: 架空市
+      en_name: "Kakuu City"
+      prefecture_name: "13"
+      address1: 架空市
+      address2: "架空一丁目1番1号"
+      rep_last_nm: 架空
+      rep_first_nm: 太郎
+      rep_last_nm_kana: カクウ
+      rep_first_nm_kana: タロウ
+      birthday_ymd: "19700101"
+    user:
+      user_last_nm: 架空
+      user_first_nm: 太郎
+      user_last_nm_kana: カクウ
+      user_first_nm_kana: タロウ
+      user_post_code: "1000001"
+      user_prefecture_name: "13"
+      user_address1: 架空市
+      user_address2: "架空一丁目1番1号"
+      user_address3: 架空市役所
+      user_department: 総務部
+      user_tel_no_contact: "0300000000"
+      user_birthday_ymd: "19700101"
+    mandate_info: []
+    verified_claims:
+      verification:
+        trust_framework: jp_gbizid_v1
+        assurance_level: ial2
+        time: "2021-06-06T05:32+09:00"
+        assurance_process:
+          procedure: jp_gbizid_online_corporation
+      claims:
+        family_name: 架空
+        given_name: 太郎
+        birthdate: "1970-01-01"
+        authority:
+          applies_to:
+            registration_number: "5000020130001"
+          permission:
+            - role: prime
+    role:
+      applies_to:
+        levels:
+          - level: 1
+            branch_name: 架空市
+      permission:
+        - role: jp_gbizid_prime
+    delegation_info: {}
+
+  # --- gBizIDプライム・法人(地方公共団体の例・都道府県) ---------------------
+  - username: kakuuken
+    password: password
+    sub: "1501"
+    account_type: 2
+    corp_type: 1
+    label: GビズIDプライム・地方公共団体（架空・都道府県）
+    email: chiji@kakuu-ken.lg.jp
+    profile:
+      corporate_number: "6000020010006"
+      name: 架空県
+      en_name: "Kakuu Prefecture"
+      prefecture_name: "01"
+      address1: 架空市
+      address2: "架空二丁目2番2号"
+      rep_last_nm: 架空
+      rep_first_nm: 花子
+      rep_last_nm_kana: カクウ
+      rep_first_nm_kana: ハナコ
+      birthday_ymd: "19650101"
+    user:
+      user_last_nm: 架空
+      user_first_nm: 花子
+      user_last_nm_kana: カクウ
+      user_first_nm_kana: ハナコ
+      user_post_code: "0600001"
+      user_prefecture_name: "01"
+      user_address1: 架空市
+      user_address2: "架空二丁目2番2号"
+      user_address3: 架空県庁
+      user_department: 総務部
+      user_tel_no_contact: "0110000000"
+      user_birthday_ymd: "19650101"
+    mandate_info: []
+    verified_claims:
+      verification:
+        trust_framework: jp_gbizid_v1
+        assurance_level: ial2
+        time: "2021-06-06T05:32+09:00"
+        assurance_process:
+          procedure: jp_gbizid_online_corporation
+      claims:
+        family_name: 架空
+        given_name: 花子
+        birthdate: "1965-01-01"
+        authority:
+          applies_to:
+            registration_number: "6000020010006"
+          permission:
+            - role: prime
+    role:
+      applies_to:
+        levels:
+          - level: 1
+            branch_name: 架空県
+      permission:
+        - role: jp_gbizid_prime
+    delegation_info: {}
+
   # --- gBizIDプライム・法人 -------------------------------------------------
   - username: yamada
     password: password
     sub: "1242"
     account_type: 2
     corp_type: 1
+    label: GビズIDプライム・法人
     email: yamada.tarou@example.co.jp
     profile:
       corporate_number: "2710100718279"
@@ -77,6 +203,7 @@ users:
     sub: "1300"
     account_type: 2
     corp_type: 2
+    label: GビズIDプライム・個人事業主
     email: tanaka.taro@example.co.jp
     profile:
       corporate_number: "3000000000003"
@@ -140,6 +267,7 @@ users:
     sub: "1243"
     account_type: 3
     corp_type: 1
+    label: GビズIDメンバー・法人
     parent_id: "1242" # 親となる gBizIDプライム(yamada)の sub
     email: suzuki.hanako@example.co.jp
     # プライム同様、法人の基本情報(profile)は所属会社の情報が返る
@@ -235,6 +363,7 @@ users:
     sub: "1400"
     account_type: 1
     corp_type: 2
+    label: GビズIDエントリー・個人事業主
     email: sato.jiro@example.com
     profile:
       corporate_number: "4000000000004"

@@ -23,9 +23,23 @@ Docker:
 docker compose up --build
 ```
 
-`main`へのpush時にGitHub ActionsがDockerイメージをGHCRへ自動publishする。ビルドせずに直接pullすることも可能:
+`main`へのpush時にGitHub ActionsがDockerイメージをGHCRへ自動publishする。ビルドせずに直接pullして起動することも可能:
 ```bash
 docker pull ghcr.io/takehikokodama/nobizid:latest
+docker run -d --name nobizid -p 7999:7999 ghcr.io/takehikokodama/nobizid:latest
+```
+
+イメージには`users.yaml`のデフォルト4ユーザーが同梱されている（`yamada`/`tanaka`/`suzuki`/`sato`、
+パスワードはいずれも`password`）。自分の`users.yaml`を使いたい場合はボリュームマウントで上書きする:
+```bash
+docker run -d --name nobizid -p 7999:7999 \
+  -v $(pwd)/users.yaml:/app/users.yaml \
+  ghcr.io/takehikokodama/nobizid:latest
+```
+
+起動確認:
+```bash
+curl http://localhost:7999/oauth/.well-known/openid-configuration
 ```
 
 ## 設定（環境変数）
@@ -74,6 +88,11 @@ RPが要求したscope・PKCEの有無・token交換(authorization_code/refresh_
 ```bash
 pnpm --filter rp-sample dev   # http://localhost:3000
 ```
+
+rp-sampleはDockerイメージには含まれないため、リポジトリをclone/pullして`pnpm install`した状態で
+起動する。rp-sampleの既定値（`GBIZID_ISSUER=http://localhost:7999/oauth/`、
+`GBIZID_REDIRECT_URI=http://localhost:3000/callback`）は上記の`docker run`の既定設定とそのまま
+一致するため、GHCRから起動したコンテナに対しても環境変数の設定なしで接続できる。
 
 詳細は [rp-sample/README.md](./rp-sample/README.md) を参照。
 

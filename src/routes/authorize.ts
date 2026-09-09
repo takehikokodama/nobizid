@@ -4,7 +4,7 @@ import { CLIENT_ID, GRANTED_OPTIONAL_SCOPES, REDIRECT_URI } from '../config.js'
 import { recordLogin } from '../history.js'
 import { resolveAuthorizeScopes } from '../scopes.js'
 import { generateAuthCode, saveAuthCode } from '../store.js'
-import { listUsernames, verifyCredentials } from '../users.js'
+import { listLoginHints, verifyCredentials } from '../users.js'
 
 const app = new Hono()
 
@@ -28,7 +28,7 @@ function loginForm(params: {
   error?: string
 }) {
   const { state, nonce, redirectUri, scope, codeChallenge, codeChallengeMethod, usernameHint, error } = params
-  const usernames = listUsernames()
+  const loginHints = listLoginHints()
   return `<!doctype html>
 <html>
 <head>
@@ -105,8 +105,10 @@ function loginForm(params: {
       <button type="submit">ログイン</button>
     </form>
     ${
-      usernames.length > 0
-        ? `<p class="hint">users.yaml に定義済みのアカウント: ${usernames.map((u) => `<code>${escapeHtml(u)}</code>`).join(' ')}</p>`
+      loginHints.length > 0
+        ? `<p class="hint">users.yaml に定義済みのアカウント: ${loginHints
+            .map((h) => `<code>${escapeHtml(h.username)}</code>${h.label ? `（${escapeHtml(h.label)}）` : ''}`)
+            .join(' ')}</p>`
         : ''
     }
   </div>

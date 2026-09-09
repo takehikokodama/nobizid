@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { accountLabel } from '../account-label.js'
 import type { LoginHistoryEvent } from '../history.js'
 import { getRecentLogins } from '../history.js'
 
@@ -17,12 +18,6 @@ function escapeHtml(value: string): string {
 
 function formatTime(ms: number): string {
   return new Date(ms).toLocaleString('ja-JP', { hour12: false })
-}
-
-function accountLabel(accountType: number, corpType: number): string {
-  const account = { 1: 'gBizIDエントリー', 2: 'gBizIDプライム', 3: 'gBizIDメンバー' }[accountType] ?? `不明(${accountType})`
-  const corp = { 1: '法人', 2: '個人事業主' }[corpType] ?? `不明(${corpType})`
-  return `${account}・${corp}`
 }
 
 function scopeBadges(scope: string[]): string {
