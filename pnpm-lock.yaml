@@ -31,6 +31,28 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
+  rp-sample:
+    dependencies:
+      '@hono/node-server':
+        specifier: ^1.13.7
+        version: 1.19.17(hono@4.13.7)
+      hono:
+        specifier: ^4.6.14
+        version: 4.13.7
+      jose:
+        specifier: ^5.9.6
+        version: 5.10.0
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.20.1
+      tsx:
+        specifier: ^4.19.2
+        version: 4.23.13
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
 packages:
 
   '@esbuild/aix-ppc64@0.28.2':

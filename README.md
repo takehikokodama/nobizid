@@ -66,6 +66,17 @@ RPが要求したscope・PKCEの有無・token交換(authorization_code/refresh_
 履歴が一覧できるので、RP側の実装を繋ぎ込む際のデバッグに使う。認証なし・手動リロード・インメモリ
 （再起動で消える）。
 
+## テスト用RP (rp-sample)
+
+[rp-sample/](./rp-sample) に、scope選択・PKCE on/off・scope省略などを画面から切り替えて試せる
+テスト用RPを同梱している。ログイン成功時にはid_tokenのクレームとUserInfoのレスポンス全文を表示する。
+
+```bash
+pnpm --filter rp-sample dev   # http://localhost:3000
+```
+
+詳細は [rp-sample/README.md](./rp-sample/README.md) を参照。
+
 ## テスト
 
 ```bash

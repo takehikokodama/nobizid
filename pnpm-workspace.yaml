@@ -1,2 +1,6 @@
+packages:
+  - '.'
+  - 'rp-sample'
+
 allowBuilds:
   esbuild: true
