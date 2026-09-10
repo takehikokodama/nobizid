@@ -75,10 +75,19 @@ gBizIDプライム（法人／個人事業主）・gBizIDメンバー・gBizID�
 
 ## ログイン履歴画面
 
-`http://localhost:7999/admin/logins` で、直近のログイン(既定5件、`?limit=N`で変更可)を確認できる。
-RPが要求したscope・PKCEの有無・token交換(authorization_code/refresh_token)やuserinfo呼び出しの
-履歴が一覧できるので、RP側の実装を繋ぎ込む際のデバッグに使う。認証なし・手動リロード・インメモリ
-（再起動で消える）。
+`http://localhost:7999/admin/logins` で、直近のセッション(既定5件、`?limit=N`で変更可、最大20件
+保持)を確認できる。「セッション」は`GET /oauth/authorize`を起点に、ログイン成功・失敗の試行、
+`POST /oauth/token`（`authorization_code`/`refresh_token`）、`GET /oauth/userinfo`までをひとまとめ
+にしたもので、パスワード間違いや`invalid_grant`、不正なBearerなど**失敗した試行も記録される**。
+
+一覧の行をクリックすると詳細が展開し、以下を確認できる:
+- Authorization Request〜UserInfoまでの時系列タイムライン（各ステップのパラメータ・JWTクレーム・
+  エラー内容）
+- サマリー（所要時間・client_id・最終結果・client認証方式・PKCE有無）
+- 整合性チェック（state一致・nonce一致・PKCE検証・redirect_uri一致・id_tokenのaud/iss/exp）
+
+RP側の実装を繋ぎ込む際、どのステップでどんなパラメータが送られ、失敗した場合はどこで崩れたかを
+1画面で追える。認証なし・手動リロード・インメモリ（再起動で消える）。
 
 ## テスト用RP (rp-sample)
 

@@ -6,8 +6,8 @@ export type GrantRecord = {
   scope: string[]
   nonce: string
   authTime: number
-  // Links this grant back to the originating login for /admin/logins.
-  loginId: string
+  // Links this grant back to the originating session for /admin/logins.
+  sessionId: string
 }
 
 export type AuthCodeRecord = GrantRecord & {

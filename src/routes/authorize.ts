@@ -1,9 +1,8 @@
-import { randomUUID } from 'node:crypto'
 import { Hono } from 'hono'
 import { CLIENT_ID, GRANTED_OPTIONAL_SCOPES, REDIRECT_URI } from '../config.js'
-import { recordLogin } from '../history.js'
 import { resolveAuthorizeScopes } from '../scopes.js'
 import { generateAuthCode, saveAuthCode } from '../store.js'
+import * as sessions from '../sessions.js'
 import { listLoginHints, verifyCredentials } from '../users.js'
 
 const app = new Hono()
@@ -18,6 +17,7 @@ function escapeHtml(value: string): string {
 }
 
 function loginForm(params: {
+  sessionId: string
   state: string
   nonce: string
   redirectUri: string
@@ -27,7 +27,8 @@ function loginForm(params: {
   usernameHint?: string
   error?: string
 }) {
-  const { state, nonce, redirectUri, scope, codeChallenge, codeChallengeMethod, usernameHint, error } = params
+  const { sessionId, state, nonce, redirectUri, scope, codeChallenge, codeChallengeMethod, usernameHint, error } =
+    params
   const loginHints = listLoginHints()
   return `<!doctype html>
 <html>
@@ -88,6 +89,7 @@ function loginForm(params: {
     <p class="subtitle">ローカル開発用ダミーログイン</p>
     ${error ? `<div class="banner" role="alert">${escapeHtml(error)}</div>` : ''}
     <form method="POST" action="/oauth/authorize">
+      <input type="hidden" name="session_id" value="${escapeHtml(sessionId)}" />
       <input type="hidden" name="state" value="${escapeHtml(state)}" />
       <input type="hidden" name="nonce" value="${escapeHtml(nonce)}" />
       <input type="hidden" name="redirect_uri" value="${escapeHtml(redirectUri)}" />
@@ -136,7 +138,10 @@ app.get('/oauth/authorize', (c) => {
   const codeChallengeMethod = c.req.query('code_challenge_method') ?? ''
 
   // invalid_client / invalid_grant (bad redirect_uri) are shown on an error
-  // page rather than redirected, matching the guideline.
+  // page rather than redirected, matching the guideline. We also don't
+  // start tracking a session for these: there's no trustworthy redirect
+  // target and client_id isn't even recognized, so it can't meaningfully
+  // be attributed to "this RP".
   if (!clientId || clientId !== CLIENT_ID) {
     return c.text('invalid_client: unknown client_id', 400)
   }
@@ -145,23 +150,40 @@ app.get('/oauth/authorize', (c) => {
     return c.text('invalid_grant: unknown redirect_uri', 400)
   }
 
+  const scopes = resolveAuthorizeScopes(scopeParam, GRANTED_OPTIONAL_SCOPES)
+  const sessionId = sessions.startSession({
+    at: Date.now(),
+    clientId,
+    redirectUri,
+    scopeParamRaw: scopeParam ?? null,
+    resolvedScope: scopes === 'invalid_scope' ? null : scopes,
+    state,
+    nonce,
+    pkce: Boolean(codeChallenge),
+    codeChallengeMethod: codeChallenge ? codeChallengeMethod : null,
+    error: null,
+  })
+
   if (!responseType) {
+    sessions.recordAuthorizeGetError(sessionId, { error: 'invalid_request' })
     return c.redirect(redirectWithError(redirectUri, 'invalid_request', state), 302)
   }
   if (responseType !== 'code') {
+    sessions.recordAuthorizeGetError(sessionId, { error: 'unsupported_response_type' })
     return c.redirect(redirectWithError(redirectUri, 'unsupported_response_type', state), 302)
   }
   if (codeChallenge && codeChallengeMethod !== 'S256') {
+    sessions.recordAuthorizeGetError(sessionId, { error: 'invalid_request', errorDescription: 'code_challenge_method must be S256' })
     return c.redirect(redirectWithError(redirectUri, 'invalid_request', state), 302)
   }
-
-  const scopes = resolveAuthorizeScopes(scopeParam, GRANTED_OPTIONAL_SCOPES)
   if (scopes === 'invalid_scope') {
+    sessions.recordAuthorizeGetError(sessionId, { error: 'invalid_scope' })
     return c.redirect(redirectWithError(redirectUri, 'invalid_scope', state, scopeParam), 302)
   }
 
   return c.html(
     loginForm({
+      sessionId,
       state,
       nonce,
       redirectUri,
@@ -175,6 +197,7 @@ app.get('/oauth/authorize', (c) => {
 
 app.post('/oauth/authorize', async (c) => {
   const body = await c.req.parseBody()
+  const sessionId = String(body.session_id ?? '')
   const state = String(body.state ?? '')
   const nonce = String(body.nonce ?? '')
   const redirectUri = String(body.redirect_uri ?? '')
@@ -186,8 +209,10 @@ app.post('/oauth/authorize', async (c) => {
 
   const user = verifyCredentials(username, password)
   if (!user) {
+    sessions.recordAuthorizePost(sessionId, { at: Date.now(), username, state, success: false, sub: null, code: null })
     return c.html(
       loginForm({
+        sessionId,
         state,
         nonce,
         redirectUri,
@@ -202,7 +227,6 @@ app.post('/oauth/authorize', async (c) => {
   }
 
   const scopeList = scope.split(' ').filter(Boolean)
-  const loginId = randomUUID()
 
   const code = generateAuthCode()
   saveAuthCode(code, {
@@ -212,23 +236,10 @@ app.post('/oauth/authorize', async (c) => {
     nonce,
     authTime: Math.floor(Date.now() / 1000),
     codeChallenge: codeChallenge || undefined,
-    loginId,
+    sessionId,
   })
-
-  recordLogin({
-    id: loginId,
-    loggedInAt: Date.now(),
-    username: user.username,
-    sub: user.sub,
-    accountType: user.account_type,
-    corpType: user.corp_type,
-    clientId: CLIENT_ID,
-    redirectUri,
-    scope: scopeList,
-    pkce: Boolean(codeChallenge),
-    state,
-    nonce,
-  })
+  sessions.indexCode(code, sessionId)
+  sessions.recordAuthorizePost(sessionId, { at: Date.now(), username, state, success: true, sub: user.sub, code })
 
   const url = new URL(redirectUri)
   url.searchParams.set('code', code)
