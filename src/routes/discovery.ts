@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { BASE_SCOPES, OPTIONAL_SCOPES } from '../scopes.js'
+import * as sessions from '../sessions.js'
 import {
   AUTHORIZATION_ENDPOINT,
   ISSUER,
@@ -15,6 +16,7 @@ const app = new Hono()
 // standard OIDC discovery would land given the documented issuer/jwks_uri
 // relationship, so we serve it here for convenience.
 app.get('/oauth/.well-known/openid-configuration', (c) => {
+  sessions.recordDiscoveryFetch()
   return c.json({
     issuer: ISSUER,
     authorization_endpoint: AUTHORIZATION_ENDPOINT,
